@@ -106,7 +106,7 @@ namespace CommonLibrary
             [StringValue("DOCPRINTING")]
             DOCPRINTING = 38,
             [StringValue("DATAUTIL")]
-            DATAUTIL = 39,
+            DATAUTIL = 39
         }
 
         public enum FormState
