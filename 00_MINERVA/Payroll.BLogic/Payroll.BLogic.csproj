@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8321A049-4AF2-435F-9758-803DECA6FCEF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Inventory.BLogic</RootNamespace>
+    <AssemblyName>Inventory.BLogic</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <StartupObject>
+    </StartupObject>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CommonLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Library\CommonLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.XtraEditors.v16.2, Version=16.2.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="EPPlus, Version=4.5.3.1, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.5.3.1\lib\net40\EPPlus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Inventory.DAL, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Library\Inventory.DAL.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccountMasterBL.cs" />
+    <Compile Include="ActualLogViewingBL.cs" />
+    <Compile Include="AdjustmentPaymentsBL.cs" />
+    <Compile Include="AES.cs" />
+    <Compile Include="AllowanceMasterBL.cs" />
+    <Compile Include="AssumedDayPostingBL.cs" />
+    <Compile Include="DeductionMasterBL.cs" />
+    <Compile Include="GovernmentRemittancesBL.cs" />
+    <Compile Include="GovernmentTextfileBL.cs" />
+    <Compile Include="IAES.cs" />
+    <Compile Include="LeaveRefundBL.cs" />
+    <Compile Include="LoginNetDomainBL.cs" />
+    <Compile Include="LogLedgerUpdatingBL.cs" />
+    <Compile Include="NewLaborCostBL.cs" />
+    <Compile Include="NewLastPayComputationBL.cs" />
+    <Compile Include="BackupDatabaseBL.cs" />
+    <Compile Include="BankDebitAdviceBL.cs" />
+    <Compile Include="BaseBL.cs" />
+    <Compile Include="BaseServiceBL.cs" />
+    <Compile Include="BonusComputation13thMonthBL.cs" />
+    <Compile Include="CommonBL.cs" />
+    <Compile Include="CycleOpeningBL.cs" />
+    <Compile Include="CycleProcessingMailBL.cs" />
+    <Compile Include="DocumentSettingBL.cs" />
+    <Compile Include="EmployeeCedulaBL.cs" />
+    <Compile Include="EmployeeDeductionExemptionBL.cs" />
+    <Compile Include="EmployeeDeferredBL.cs" />
+    <Compile Include="DbRecord.cs" />
+    <Compile Include="EmployeeMasterBL.cs" />
+    <Compile Include="FormulaGeneratorBL.cs" />
+    <Compile Include="GenericLookupBL.cs" />
+    <Compile Include="GenericMasterBL.cs" />
+    <Compile Include="GovermentalRepBL.cs" />
+    <Compile Include="HRCReportsBL.cs" />
+    <Compile Include="HRCStatisticsBL.cs" />
+    <Compile Include="HRCTextfileGenerationBL.cs" />
+    <Compile Include="IndividualDeductionEntryBL.cs" />
+    <Compile Include="MovementMasterBL.cs" />
+    <Compile Include="MultiProfileBL.cs" />
+    <Compile Include="BIR1601CBL.cs" />
+    <Compile Include="NewAlphalistProcessingBL.cs" />
+    <Compile Include="NewLaborHoursAdjustmentBL.cs" />
+    <Compile Include="NewLaborHoursGenerationBL.cs" />
+    <Compile Include="NewPayrollCalculationBL.cs" />
+    <Compile Include="NewRetroPayComputationBL.cs" />
+    <Compile Include="NewSpecialPayrollCalculationBL.cs" />
+    <Compile Include="NewSpecialYTDEntryBL.cs" />
+    <Compile Include="NewW2EntryBL.cs" />
+    <Compile Include="NotifyEmailBL.cs" />
+    <Compile Include="PayrollPeriodControlMasterBL.cs" />
+    <Compile Include="PayrollRegisterBL.cs" />
+    <Compile Include="PayrollTransactionPostingBL.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShiftCodeBL.cs" />
+    <Compile Include="PerfectAttendanceBL.cs" />
+    <Compile Include="SystemCycleProcessingBL.cs" />
+    <Compile Include="SystemMenuLogBL.cs" />
+    <Compile Include="TemporaryFile.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

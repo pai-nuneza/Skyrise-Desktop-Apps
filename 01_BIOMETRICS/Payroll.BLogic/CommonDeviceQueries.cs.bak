@@ -1,0 +1,306 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Payroll.BLogic
+{
+    public static class CommonDeviceQueries
+    {
+        public static string SelectEmployeeFingerPrintData(string Database, 
+                                                           string DeviceID, 
+                                                           string UserLogin)
+        {
+            return string.Format(@"   SELECT [Zfp_EmployeeID]
+                                            ,[Zfp_RFID]
+                                            ,[Zfp_FingerIndex]
+                                            ,[Zfp_Template]
+                                            ,[Zfp_Privilege]
+                                            ,[Zfp_Password]
+                                            ,[Zfp_Enabled]
+                                            ,[Zfp_Flag]
+                                            ,GetDate()
+                                            ,'{2}'
+                                            ,[Zfp_EmployeeIDMapping]
+                                            ,[Zfp_FaceData]
+                                        FROM [dbo].[{0}]
+                                        where Zfp_EmployeeID='{1}'"
+                                            ,Database
+                                            ,DeviceID
+                                            ,UserLogin);
+        }
+
+        public static string SelectAllEmployeeData(string Database)
+        {
+            //Note that the ordering of this data is very important.
+            //It must be ordered by ID, FP index.
+            //Since the looping procedure of loading to device is dependent on the ID sequence for assigning of Finger Print, RFID, Face Data.
+            return string.Format(@"   SELECT [Zfp_EmployeeID] as EmployeeID
+                                            ,[Zfp_RFID] as RFID
+                                            ,[Zfp_FingerIndex] as FingerIndex
+                                            ,[Zfp_Template] as Template
+                                            ,[Zfp_Privilege] as Privilege
+                                            ,[Zfp_Password] as Password
+                                            ,[Zfp_Enabled] as Enabled
+                                            ,[Zfp_Flag] as Flag
+                                            ,[ludatetime] as Ludatetime
+                                            ,[Usr_Login] as UserLogin
+                                            ,[Zfp_FaceData] as FaceData
+                                        FROM [{0}]
+                                       WHERE (ISNULL(Zfp_Template, '') <> '')
+                                          OR ((ISNULL(Zfp_RFID, '') <> ''and Zfp_RFID <> '0')
+										  OR ISNULL(Zfp_FaceData, '') <> '')
+                                        ORDER BY Zfp_EmployeeID, Zfp_FingerIndex", Database);
+        }
+
+        public static string SelectEmployeeDataDisplay(string Database)
+        { 
+            return string.Format(@"    SELECT Convert(varchar(100),[Zfp_EmployeeID]) AS [PK]
+	                                         ,[Zfp_EmployeeID] AS [XXX_DeviceID]
+		                                     ,IsNull([Zfp_EmployeeIDMapping], CASE WHEN IsNull([Tel_LastName], '') = '' THEN ' UNMAPPED' ELSE [Tel_IDNo] END) AS [XXX_EmployeeID]
+		                                     ,IsNull([Tel_LastName], ' UNMAPPED') [XXX_LastName]
+		                                     ,IsNull([Tel_FirstName], ' UNMAPPED') [XXX_FirstName]
+		                                     ,IsNull([Tel_MiddleName], '') [XXX_MiddleName]
+		                                     ,(SELECT COUNT([Zfp_FingerIndex]) FROM [{0}] WHERE MAIN.Zfp_EmployeeID = Zfp_EmployeeID AND LEN([Zfp_Template]) > 0) AS [XXX_TotalFPIndex]
+		                                     ,CASE WHEN IsNull([Zfp_FaceData], '') = '' THEN 'None' ELSE 'Ok' END AS [XXX_FaceData]
+		                                     ,[Zfp_RFID] AS [XXX_RFID]
+                                             ,CASE WHEN LEN([Zfp_Template]) < 1 THEN ''
+                                                   WHEN Zfp_Template like 'oco%' THEN '9.0' --Base on finger print data only.
+                                                   ELSE '10.0' END [XXX_Algorithm]
+	                                     FROM [{0}] MAIN
+                                    LEFT JOIN T_EmpLog
+	                                       ON (ISNUMERIC(Tel_IDNo) = 1 AND CONVERT(BIGINT,Zfp_employeeid) = CONVERT(BIGINT,Tel_IDNo))
+	                                       OR (Zfp_EmployeeIDMapping = Tel_IDNo)
+	                                    WHERE [Zfp_FingerIndex] = 0
+                                     ORDER BY [PK], [XXX_LastName], [XXX_FirstName]", Database);
+        }
+
+        public static string SelectMappingTableDisplay(string TableName)
+        {
+            return String.Format(@"   SELECT [Zfp_EmployeeIDMapping] AS [MappingID]
+                                            ,[Zfp_EmployeeID] AS [DeviceID]
+                                            ,CASE WHEN [Tel_LastName] IS NULL THEN '' ELSE [Tel_LastName] END [LastName]
+                                            ,CASE WHEN [Tel_FirstName] IS NULL THEN '' ELSE [Tel_FirstName] END [FirstName]
+                                            ,CASE WHEN [Tel_MiddleName] IS NULL THEN '' ELSE [Tel_MiddleName] END [MiddleName]
+                                            ,(SELECT COUNT([Zfp_FingerIndex]) FROM [{0}] WHERE MAIN.Zfp_EmployeeID = Zfp_EmployeeID  AND LEN([Zfp_Template]) > 0)AS [TotalFPIndex]
+                                            ,CASE WHEN IsNull([Zfp_FaceData], '') = '' THEN 'None' ELSE 'Ok' END AS [FaceData]
+                                            ,[Zfp_RFID] AS [RFID]
+                                       FROM [{0}] MAIN
+                                  LEFT JOIN T_EmpLog
+                                         ON (ISNUMERIC(Tel_IDNo)=1
+                                        AND CONVERT(BIGINT,Zfp_employeeid) = CONVERT(BIGINT,Tel_IDNo))
+                                         OR (Zfp_EmployeeIDMapping = Tel_IDNo)
+                                      WHERE [Zfp_FingerIndex]=0
+                                      ORDER BY 1,2", TableName);
+        }
+
+        public static string CreateEmployeeFingerPrintTable(string TableName)
+        {
+            return string.Format(@"CREATE TABLE [dbo].[{0}](
+	                                        [Zfp_EmployeeID] [varchar](15) NOT NULL,
+	                                        [Zfp_RFID] [varchar](15) NULL,
+	                                        [Zfp_FingerIndex] [tinyint] NOT NULL,
+	                                        [Zfp_Template] [varchar](max) NULL,
+	                                        [Zfp_Privilege] [tinyint] NULL,
+	                                        [Zfp_Password] [varchar](15) NOT NULL,
+	                                        [Zfp_Enabled] [bit] NOT NULL,
+	                                        [Zfp_Flag] [bit] NOT NULL,
+	                                        [ludatetime] [datetime] NOT NULL,
+	                                        [Usr_Login] [varchar](15) NULL,
+                                            [Zfp_EmployeeIDMapping] [varchar](15) NULL,
+                                            [Zfp_FaceData] [varchar](max) NULL
+                                         CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
+                                        (
+	                                        [Zfp_EmployeeID] ASC,
+	                                        [Zfp_FingerIndex] ASC
+                                        )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+                                        ) ON [PRIMARY]", TableName);
+        }
+
+        public static string CreateEmployeeDeviceData(string TableName)
+        {
+            return string.Format(@"IF EXISTS(SELECT Zfp_EmployeeID FROM {0}
+	                                          WHERE Zfp_EmployeeID = @EmployeeID
+                                                AND Zfp_FingerIndex = @FingerIndex)
+	                                    BEGIN
+		                                     UPDATE {0}
+                                                SET [Zfp_RFID] = Case When Len(RTRIM(@RFID)) > 0 Then @RFID Else [Zfp_RFID] End 
+                                                   ,[Zfp_Template] = Case When Len(RTRIM(@template)) > 0 Then @template Else [Zfp_Template] End 
+                                                   ,[Zfp_Privilege] = @Privilege
+                                                   ,[Zfp_Password] = @Password
+                                                   ,[Zfp_Enabled] = @Enabled
+                                                   ,[Zfp_Flag] = @Flag
+                                                   ,[ludatetime] = @Ludatetime
+                                                   ,[Usr_Login] = @UsrLogin
+                                                   ,[Zfp_FaceData] = Case When Len(RTRIM(@FaceData)) > 0 Then  @FaceData Else [Zfp_FaceData] End
+                                              WHERE [Zfp_EmployeeID] = @EmployeeID
+                                                AND [Zfp_FingerIndex] = @FingerIndex
+	                                    END
+                                    ELSE
+                                        BEGIN
+
+                                        INSERT INTO {0}
+                                                  ([Zfp_EmployeeID]
+                                                  ,[Zfp_RFID]
+                                                  ,[Zfp_FingerIndex]
+                                                  ,[Zfp_Template]
+                                                  ,[Zfp_Privilege]
+                                                  ,[Zfp_Password]
+                                                  ,[Zfp_Enabled]
+                                                  ,[Zfp_Flag]
+                                                  ,[ludatetime]
+                                                  ,[Usr_Login]
+                                                  ,[Zfp_FaceData])
+                                              VALUES
+                                                  (@EmployeeID
+                                                  ,@RFID
+                                                  ,@FingerIndex
+                                                  ,@template
+                                                  ,@Privilege
+                                                  ,@Password
+                                                  ,@Enabled
+                                                  ,@Flag
+                                                  ,@Ludatetime
+                                                  ,@UsrLogin
+                                                  ,@FaceData)
+                                         END", TableName);
+        }
+
+        public static string SelectStandardVerificationTypeShedule()
+        {
+            return @"    SELECT [Msc_DeviceIP] as [IP]
+		                        ,DatePart(Year, [Ssm_YearFrom]) as [From Year]
+		                        ,DatePart(Year, [Ssm_YearTo]) as [To Year]
+		                        ,DatePart(Month,[Ssm_MonthFrom]) as [From Month]
+		                        ,DatePart(Month,[Ssm_MonthTo]) as [To Month]
+		                        ,Substring(Convert(char,[Ssm_TimeFrom],108), 0, 6) as [From Time]
+		                        ,Substring(Convert(char,[Ssm_TimeTo],108), 0, 6) as [To Time]
+		                        ,[Ssm_Mon] as [MON] 
+		                        ,[Ssm_Tue] as [TUE]
+		                        ,[Ssm_Wed] as [WED]
+		                        ,[Ssm_Thu] as [THU]
+		                        ,[Ssm_Fri] as [FRI]
+		                        ,[Ssm_Sat] as [SAT]
+		                        ,[Ssm_Sun] as [SUN]
+		                        ,[Ssm_AllowPin]  as [Verify-1]
+		                        ,[Ssm_AllowRFID] as [Verify-2]
+		                        ,[Ssm_AllowFP]   as [Verify-3]
+		                        ,[Ssm_AllowFace] as [Verify-4]
+		                        ,[Ssm_ComboMode] as [Combo]
+	                        FROM [dbo].[M_Schedule] 
+	                        JOIN [dbo].[M_TerminalDevice2]
+		                        ON Msc_DeviceIP =  Mtd_DeviceIP
+		                        AND Msc_RecordStatus = 'A'
+		                        AND Mtd_RecordStatus = 'A'
+	                        ORDER BY Ssm_ScheduleCode Desc";
+        }
+
+        public static string SelectEmployeePicture(string TableName)
+        {
+            return string.Format(@" SELECT [Zfp_employeeid] AS [EmployeeID]
+				                          ,[Lmt_Picture] [Picture]
+		                              FROM [{0}] MAIN
+	                             LEFT JOIN T_EmpLog
+		                                ON ((ISNUMERIC(Tel_IDNo) = 1 AND CONVERT(BIGINT,Zfp_employeeid) = CONVERT(BIGINT,Tel_IDNo))
+		                                OR (Zfp_EmployeeIDMapping = Tel_IDNo))
+		                             WHERE [Zfp_FingerIndex] = 0
+                                       AND ((ISNULL(Zfp_Template, '') <> '')
+	                                    OR ((ISNULL(Zfp_RFID, '') <> ''and Zfp_RFID <> '0')
+	                                    OR ISNULL(Zfp_FaceData, '') <> ''))
+		                               AND NOT (Lmt_Picture IS NULL)", TableName);
+        }
+
+        public static string GenerateDeviceIDMapping()
+        {
+            return @"--NILO ADDED 08092012 [ID MAPPING]
+                                BEGIN --MAPPING
+                                SET NOCOUNT ON;                                            
+
+
+                                DECLARE @FPTABLE CHAR(50)
+                                DECLARE @UNIONEDTABLE VARCHAR(MAX)
+                                DECLARE @INDEX INT
+
+	                                BEGIN
+
+                                    SET @INDEX = 0
+    
+	                                DECLARE FPCURSOR CURSOR FOR
+                                    SELECT Mfp_TableName FROM M_FingerPrint
+                                    WHERE Mfp_RecordStatus = 'A'
+
+                                    OPEN FPCURSOR --Opening Cursor
+
+                                        FETCH NEXT FROM FPCURSOR  --Get the content of the table set to your cursor
+                                        INTO @FPTABLE
+                                        WHILE @@FETCH_STATUS = 0 
+
+                                            --Starting Method
+                                            BEGIN
+                                                IF(@INDEX=0)
+                                                    BEGIN
+                                                        SET @UNIONEDTABLE = 'SELECT Zfp_EmployeeID as [EmployeeID] ,
+						                                                            Zfp_EmployeeIDMapping as [MappingID],
+																					NULL as [EmployeeName]
+											                                   FROM dbo.' + @FPTABLE + 
+																			      'WHERE Zfp_EmployeeIDMapping IS NOT NULL
+																				     AND Zfp_EmployeeID <> Zfp_EmployeeIDMapping'
+                                                    END
+                                                ELSE
+                                                    BEGIN
+                                                        SET @UNIONEDTABLE = @UNIONEDTABLE + ' UNION 
+														                                     SELECT Zfp_EmployeeID as [EmployeeID] ,
+															                                        Zfp_EmployeeIDMapping as [MappingID], 
+																									NULL as [EmployeeName]
+															                                   FROM dbo.' + @FPTABLE + 
+																							   'WHERE Zfp_EmployeeIDMapping IS NOT NULL
+																								  AND Zfp_EmployeeID <> Zfp_EmployeeIDMapping'
+                                                    END
+
+                                                SET @INDEX = @INDEX+1
+
+                                            FETCH NEXT FROM FPCURSOR  --this Line serves as incrementation to your loop
+                                                INTO   @FPTABLE
+
+                                            END
+                                        --Closing Cursor
+                                        CLOSE FPCURSOR;
+                                        DEALLOCATE FPCURSOR; 
+
+	                                END
+
+                                    DECLARE @MappingTable AS TABLE
+                                    (
+                                        EmployeeID CHAR(15) NULL ,
+		                                MappingID CHAR(15) NULL,
+										EmployeeName CHAR(30) NULL
+                                    )
+
+                                    BEGIN
+                                        INSERT INTO @MappingTable
+                                        EXECUTE(@UNIONEDTABLE)
+                                    END
+
+	                                SELECT EmployeeID ,
+	                                       MappingID ,
+										   Tel_FirstName EmployeeName,
+										   'TRUE' as IsMapped
+                                      FROM @MappingTable
+							     LEFT JOIN T_EmpLog 
+									    ON MappingID = Tel_IDNo
+							           
+									 UNION
+
+									SELECT Tel_IDNo as EmployeeID,
+										   Tel_IDNo as MappingID,
+										   Tel_FirstName as EmployeeName,
+										   'FALSE' as IsMapped
+									  FROM T_EmpLog
+								 LEFT JOIN @MappingTable
+									    ON Tel_IDNo <> MappingID
+
+                                  ORDER BY EmployeeName 
+
+                                END";
+        }
+    }
+}
